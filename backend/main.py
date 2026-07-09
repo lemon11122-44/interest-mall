@@ -12,6 +12,13 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="利息计算器+商城", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+
+@app.get("/")
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "interest-mall"}
+
+
 # ========== 工具函数 ==========
 def generate_order_no():
     t = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
