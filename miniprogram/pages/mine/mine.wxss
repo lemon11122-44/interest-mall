@@ -1,0 +1,15 @@
+page { background: #f5f5f5; }
+.user-card { background: #fff; margin: 20rpx; padding: 40rpx; border-radius: 16rpx; display: flex; align-items: center; }
+.avatar { width: 100rpx; height: 100rpx; border-radius: 50%; background: #07c160; color: #fff; text-align: center; line-height: 100rpx; font-size: 40rpx; }
+.user-info { margin-left: 24rpx; }
+.user-name { font-size: 32rpx; font-weight: 600; display: block; }
+.user-role { font-size: 24rpx; color: #999; margin-top: 8rpx; display: block; }
+.login-card { flex-direction: column; }
+.login-hint { font-size: 28rpx; color: #666; margin-bottom: 24rpx; }
+.login-input { width: 100%; border: 2rpx solid #eee; border-radius: 8rpx; padding: 16rpx 20rpx; margin-bottom: 16rpx; box-sizing: border-box; }
+.login-actions { display: flex; gap: 20rpx; margin-top: 8rpx; width: 100%; }
+.btn-login { flex: 1; background: #07c160; color: #fff; border-radius: 8rpx; padding: 16rpx; text-align: center; font-size: 28rpx; }
+.btn-register { flex: 1; background: #fff; color: #07c160; border: 2rpx solid #07c160; border-radius: 8rpx; padding: 16rpx; text-align: center; font-size: 28rpx; }
+.menu-list { background: #fff; margin: 20rpx; border-radius: 16rpx; }
+.menu-item { display: flex; justify-content: space-between; padding: 24rpx 30rpx; border-bottom: 2rpx solid #f0f0f0; font-size: 28rpx; }
+.menu-item:last-child { border-bottom: none; }

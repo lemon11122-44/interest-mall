@@ -1,0 +1,34 @@
+<navigation-bar title="我的订单" color="black" background="#fff" />
+<scroll-view class="page" scroll-y>
+  <view class="status-bar">
+    <view class="status-item {{activeTab===item?'active':''}}" wx:for="{{['全部','pending','paid','shipped','completed','cancelled']}}" wx:key="*this" bind:tap="selectTab" data-tab="{{item}}">{{item==='全部'?'全部':item==='pending'?'待付款':item==='paid'?'待发货':item==='shipped'?'已发货':item==='completed'?'已完成':'已取消'}}</view>
+  </view>
+
+  <view class="order-card" wx:for="{{filteredOrders}}" wx:key="id">
+    <view class="order-header">
+      <text class="order-no">{{item.order_no}}</text>
+      <text class="order-status {{item.status}}">{{getStatusText(item.status)}}</text>
+    </view>
+    <view class="order-item" wx:for="{{item.items}}" wx:key="id">
+      <image class="oi-img" src="{{item.product_image}}" mode="aspectFill" />
+      <view class="oi-info">
+        <text class="oi-name">{{item.product_name}}</text>
+        <view class="oi-bottom">
+          <text>¥{{item.price}}</text>
+          <text>x{{item.quantity}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="order-footer">
+      <text>合计: ¥{{item.total_amount}}</text>
+      <view class="order-actions">
+        <button class="btn-sm" wx:if="{{item.status==='pending'}}" bind:tap="payOrder" data-id="{{item.id}}">去支付</button>
+        <button class="btn-sm btn-cancel" wx:if="{{item.status==='pending'||item.status==='paid'}}" bind:tap="cancelOrder" data-id="{{item.id}}">取消</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{filteredOrders.length===0}}">
+    <text>暂无订单</text>
+  </view>
+</scroll-view>

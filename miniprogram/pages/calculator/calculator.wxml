@@ -1,0 +1,60 @@
+<navigation-bar title="利息计算器" back="{{false}}" color="black" background="#fff" />
+<scroll-view class="page" scroll-y>
+  <view class="card">
+    <view class="card-title">选择计算模式</view>
+    <view class="mode-tabs">
+      <view class="mode-tab {{mode==1?'active':''}}" bind:tap="switchMode" data-mode="1">已知利率</view>
+      <view class="mode-tab {{mode==2?'active':''}}" bind:tap="switchMode" data-mode="2">反推利率</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="field">
+      <text class="label">本金（元）</text>
+      <input class="input" type="digit" bindinput="onInput" data-field="principal" placeholder="请输入本金" />
+    </view>
+    <view class="field">
+      <text class="label">借款期限（月）</text>
+      <input class="input" type="number" bindinput="onInput" data-field="months" placeholder="请输入月数" />
+    </view>
+    <view class="field" wx:if="{{mode==1}}">
+      <text class="label">年利率（%）</text>
+      <input class="input" type="digit" bindinput="onInput" data-field="annual_rate" placeholder="请输入年利率" />
+    </view>
+    <view class="field" wx:if="{{mode==2}}">
+      <text class="label">总利息（元）</text>
+      <input class="input" type="digit" bindinput="onInput" data-field="total_interest" placeholder="请输入总利息" />
+    </view>
+
+    <button class="btn-primary" bind:tap="calculate">开始计算</button>
+  </view>
+
+  <view class="card result-card" wx:if="{{result}}">
+    <view class="card-title">计算结果</view>
+    <view class="result-item">
+      <text>实际年利率</text>
+      <text class="{{result.annual_rate>24?'red':'green'}}">{{result.annual_rate}}%</text>
+    </view>
+    <view class="result-item">
+      <text>总利息</text>
+      <text>¥{{result.total_interest}}</text>
+    </view>
+    <view class="result-item">
+      <text>合法利息（24%以内）</text>
+      <text class="green">¥{{result.legal_interest}}</text>
+    </view>
+    <view class="result-item highlight" wx:if="{{result.is_excessive}}">
+      <text>超出24%的利息</text>
+      <text class="red">¥{{result.excess_interest}}</text>
+    </view>
+    <view class="result-item" wx:else>
+      <text>超出24%的利息</text>
+      <text class="green">¥0.00（未超出）</text>
+    </view>
+    <view class="divider"></view>
+    <view class="result-item">
+      <text>每月还款额</text>
+      <text>¥{{result.monthly_payment}}</text>
+    </view>
+  </view>
+</scroll-view>

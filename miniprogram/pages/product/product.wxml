@@ -1,0 +1,31 @@
+<navigation-bar title="商品详情" color="black" background="#fff" />
+<scroll-view class="page" scroll-y wx:if="{{product}}">
+  <image class="detail-img" src="{{product.image}}" mode="widthFix" />
+  <view class="detail-info">
+    <text class="detail-name">{{product.name}}</text>
+    <view class="detail-price">
+      <text class="price-big">¥{{product.discount_price||product.price}}</text>
+      <text class="price-old" wx:if="{{product.discount_price}}">¥{{product.price}}</text>
+    </view>
+    <view class="detail-meta">
+      <text>库存 {{product.stock}}</text>
+      <text>已售 {{product.sales}}</text>
+      <text wx:if="{{product.category}}">分类 {{product.category}}</text>
+    </view>
+    <view class="detail-desc">{{product.description||'暂无描述'}}</view>
+  </view>
+
+  <view class="qty-bar">
+    <text>数量</text>
+    <view class="qty-control">
+      <text class="qty-btn" bind:tap="changeQty" data-delta="-1">-</text>
+      <text class="qty-num">{{quantity}}</text>
+      <text class="qty-btn" bind:tap="changeQty" data-delta="1">+</text>
+    </view>
+  </view>
+
+  <view class="action-bar">
+    <view class="action-cart" bind:tap="addCart">加入购物车</view>
+    <view class="action-buy" bind:tap="buyNow">立即购买</view>
+  </view>
+</scroll-view>

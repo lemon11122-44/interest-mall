@@ -1,0 +1,35 @@
+<navigation-bar title="我的" back="{{false}}" color="black" background="#fff" />
+<scroll-view class="page" scroll-y>
+  <view class="user-card" wx:if="{{isLoggedIn}}">
+    <view class="avatar">{{user.nickname[0]}}</view>
+    <view class="user-info">
+      <text class="user-name">{{user.nickname}}</text>
+      <text class="user-role">{{user.role==='admin'?'管理员':'普通用户'}}</text>
+    </view>
+  </view>
+
+  <view class="user-card login-card" wx:else>
+    <text class="login-hint">登录后可使用完整功能</text>
+    <input class="login-input" placeholder="用户名" bindinput="onInput" data-field="username" />
+    <input class="login-input" placeholder="密码" password bindinput="onInput" data-field="password" />
+    <view class="login-actions">
+      <button class="btn-login" bind:tap="login">登录</button>
+      <button class="btn-register" bind:tap="register">注册</button>
+    </view>
+  </view>
+
+  <view class="menu-list" wx:if="{{isLoggedIn}}">
+    <view class="menu-item" bind:tap="goOrders">
+      <text>📋 我的订单</text>
+      <text>></text>
+    </view>
+    <view class="menu-item" wx:if="{{user.role==='admin'}}" bind:tap="goAdmin">
+      <text>⚙️ 后台管理</text>
+      <text>></text>
+    </view>
+    <view class="menu-item" bind:tap="logout">
+      <text>🚪 退出登录</text>
+      <text>></text>
+    </view>
+  </view>
+</scroll-view>
