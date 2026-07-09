@@ -1,6 +1,5 @@
 [build]
 builder = "railpack"
-buildCommand = ""
 
 [deploy]
-startCommand = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+startCommand = "bash start.sh"
