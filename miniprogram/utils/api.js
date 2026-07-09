@@ -1,4 +1,5 @@
-const API_BASE = "http://127.0.0.1:8000";
+const CONFIG = require("./config");
+const API_BASE = CONFIG.API_BASE;
 
 const request = (url, method = "GET", data = {}) => {
   return new Promise((resolve, reject) => {
