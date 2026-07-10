@@ -294,7 +294,7 @@ def get_admin_from_cookie(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("admin_token")
     if not token:
         return None
-    from jose import JWTError
+    from jose import jwt, JWTError
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user = db.query(User).filter(User.id == int(payload["sub"])).first()
