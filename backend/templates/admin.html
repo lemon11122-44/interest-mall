@@ -11,6 +11,11 @@
         .header h1 { font-size: 22px; }
         .header p { opacity: 0.8; margin-top: 4px; font-size: 14px; }
         .container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+        .tabs { display: flex; background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .tab { flex: 1; text-align: center; padding: 14px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 3px solid transparent; }
+        .tab.active { color: #07c160; border-bottom-color: #07c160; font-weight: 600; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
         .stat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .stat-num { font-size: 28px; font-weight: 700; color: #e53935; display: block; }
@@ -27,14 +32,24 @@
         .badge { background: #07c160; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
         .login-box { max-width: 360px; margin: 80px auto; background: #fff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .login-box h2 { text-align: center; margin-bottom: 24px; }
-        input { width: 100%; border: 2px solid #eee; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; font-size: 14px; outline: none; }
-        input:focus { border-color: #07c160; }
-        button { width: 100%; padding: 12px; background: #07c160; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        input, textarea { width: 100%; border: 2px solid #eee; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; font-size: 14px; outline: none; }
+        input:focus, textarea:focus { border-color: #07c160; }
+        textarea { min-height: 80px; resize: vertical; }
+        button { padding: 12px 24px; background: #07c160; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
         button:hover { background: #06ad56; }
+        button.btn-sm { padding: 6px 16px; font-size: 13px; }
+        button.btn-danger { background: #e53935; }
         .error { color: #e53935; text-align: center; margin-top: 12px; font-size: 14px; }
+        .success { color: #07c160; text-align: center; font-size: 14px; margin-top: 8px; }
         .logout { float: right; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
         .empty { text-align: center; padding: 40px; color: #999; }
-        .cat-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #07c160, #e53935); margin-top: 4px; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+        .form-row label { min-width: 100px; font-size: 14px; color: #666; }
+        .form-row input, .form-row textarea { flex: 1; }
+        .qrcode-preview { max-width: 200px; margin: 10px 0; border-radius: 8px; }
+        .inline-flex { display: flex; gap: 8px; align-items: center; }
+        .toast { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #07c160; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .toast.show { display: block; }
     </style>
 </head>
 <body>
@@ -51,6 +66,7 @@
         </div>
     </div>
     {% else %}
+    <div id="toast" class="toast"></div>
     <div class="header">
         <div class="container" style="padding:0">
             <a href="/admin/logout" class="logout">退出</a>
@@ -59,60 +75,172 @@
         </div>
     </div>
     <div class="container">
-        <div class="stats">
-            <div class="stat-card"><span class="stat-num">{{ stats.fee_count }}</span><span class="stat-label">扣费项目</span></div>
-            <div class="stat-card"><span class="stat-num">{{ stats.user_count }}</span><span class="stat-label">用户数</span></div>
-            <div class="stat-card"><span class="stat-num">¥{{ stats.total_monthly }}</span><span class="stat-label">月总扣费</span></div>
-            <div class="stat-card"><span class="stat-num">¥{{ stats.total_yearly }}</span><span class="stat-label">年总扣费</span></div>
+        <!-- Tab 导航 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('tab-stats')">📈 概览</div>
+            <div class="tab" onclick="switchTab('tab-fees')">📋 扣费记录</div>
+            <div class="tab" onclick="switchTab('tab-settings')">⚙️ 页面设置</div>
         </div>
 
-        <div class="card">
-            <div class="card-title">📋 全部扣费记录</div>
-            {% if fees %}
-            <table>
-                <thead>
-                    <tr><th>用户</th><th>平台</th><th>金额</th><th>周期</th><th>分类</th><th>下次扣费</th><th>状态</th></tr>
-                </thead>
-                <tbody>
-                    {% for f in fees %}
-                    <tr>
-                        <td><span class="badge">{{ f.username }}</span></td>
-                        <td><strong>{{ f.platform }}</strong></td>
-                        <td>¥{{ f.amount }}</td>
-                        <td>{{ f.cycle }}</td>
-                        <td>{{ f.category }}</td>
-                        <td>{{ f.next_date[:10] if f.next_date else '-' }}</td>
-                        <td><span class="tag {{ 'inactive' if not f.is_active else '' }}">{{ '有效' if f.is_active else '失效' }}</span></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty">暂无扣费记录</div>
-            {% endif %}
+        <!-- 概览 -->
+        <div id="tab-stats" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card"><span class="stat-num">{{ stats.fee_count }}</span><span class="stat-label">扣费项目</span></div>
+                <div class="stat-card"><span class="stat-num">{{ stats.user_count }}</span><span class="stat-label">用户数</span></div>
+                <div class="stat-card"><span class="stat-num">¥{{ stats.total_monthly }}</span><span class="stat-label">月总扣费</span></div>
+                <div class="stat-card"><span class="stat-num">¥{{ stats.total_yearly }}</span><span class="stat-label">年总扣费</span></div>
+            </div>
+            <div class="card">
+                <div class="card-title">👥 用户列表</div>
+                {% if users %}
+                <table>
+                    <thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>角色</th><th>注册时间</th><th>扣费项目数</th></tr></thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td><strong>{{ u.username }}</strong></td>
+                            <td>{{ u.nickname }}</td>
+                            <td>{{ u.role }}</td>
+                            <td>{{ u.created_at[:10] if u.created_at else '-' }}</td>
+                            <td>{{ u.fee_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="card">
-            <div class="card-title">👥 用户列表</div>
-            {% if users %}
-            <table>
-                <thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>角色</th><th>注册时间</th><th>扣费项目数</th></tr></thead>
-                <tbody>
-                    {% for u in users %}
-                    <tr>
-                        <td>{{ u.id }}</td>
-                        <td><strong>{{ u.username }}</strong></td>
-                        <td>{{ u.nickname }}</td>
-                        <td>{{ u.role }}</td>
-                        <td>{{ u.created_at[:10] if u.created_at else '-' }}</td>
-                        <td>{{ u.fee_count }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
+        <!-- 扣费记录 -->
+        <div id="tab-fees" class="tab-content">
+            <div class="card">
+                <div class="card-title">📋 全部扣费记录</div>
+                {% if fees %}
+                <table>
+                    <thead>
+                        <tr><th>用户</th><th>平台</th><th>金额</th><th>周期</th><th>分类</th><th>下次扣费</th><th>状态</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for f in fees %}
+                        <tr>
+                            <td><span class="badge">{{ f.username }}</span></td>
+                            <td><strong>{{ f.platform }}</strong></td>
+                            <td>¥{{ f.amount }}</td>
+                            <td><span class="tag {{ 'one_time' if f.cycle=='one_time' else '' }}">{{ f.cycle }}</span></td>
+                            <td>{{ f.category }}</td>
+                            <td>{{ f.next_date[:10] if f.next_date else '-' }}</td>
+                            <td><span class="tag {{ 'inactive' if not f.is_active else '' }}">{{ '有效' if f.is_active else '失效' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">暂无扣费记录</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 页面设置 -->
+        <div id="tab-settings" class="tab-content">
+            <div class="card">
+                <div class="card-title">🏠 主页内容编辑</div>
+                <div class="form-row">
+                    <label>主页标题</label>
+                    <input id="home_title" value="{{ settings.get('home_title', '扣费管理+利息计算器') }}" placeholder="小程序主页标题">
+                </div>
+                <div class="form-row">
+                    <label>主页副标题</label>
+                    <input id="home_subtitle" value="{{ settings.get('home_subtitle', '管理你的所有订阅扣费') }}" placeholder="主页副标题">
+                </div>
+                <div class="form-row" style="align-items:flex-start">
+                    <label>主页说明</label>
+                    <textarea id="home_desc" placeholder="主页底部说明文字">{{ settings.get('home_desc', '') }}</textarea>
+                </div>
+                <button onclick="saveSettings()">保存主页设置</button>
+                <div id="save_msg" class="success" style="display:none">✅ 保存成功</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💬 客服设置</div>
+                <div class="form-row">
+                    <label>客服微信号</label>
+                    <input id="kf_wechat" value="{{ settings.get('kf_wechat', '') }}" placeholder="输入微信号">
+                </div>
+                <div class="form-row" style="align-items:flex-start">
+                    <label>客服二维码</label>
+                    <div>
+                        {% if settings.get('kf_qrcode') %}
+                        <img src="{{ settings['kf_qrcode'] }}" class="qrcode-preview" id="qrcode_preview"><br>
+                        {% else %}
+                        <p style="color:#999;margin-bottom:8px">尚未上传二维码</p>
+                        {% endif %}
+                        <form id="upload_form" action="/admin/upload" method="post" enctype="multipart/form-data" target="upload_iframe" onsubmit="return uploadQR()">
+                            <input type="file" name="file" accept="image/*" id="qr_file" style="display:inline-block;width:auto">
+                            <button type="submit" class="btn-sm">上传</button>
+                        </form>
+                        <iframe name="upload_iframe" style="display:none"></iframe>
+                    </div>
+                </div>
+                <button onclick="saveSettings()">保存客服设置</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📱 小程序配置</div>
+                <div class="form-row">
+                    <label>小程序名称</label>
+                    <input id="app_name" value="{{ settings.get('app_name', '螃蟹退费小助手') }}" placeholder="小程序显示名称">
+                </div>
+                <button onclick="saveSettings()">保存配置</button>
+            </div>
         </div>
     </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showToast(msg, isError) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = isError ? '#e53935' : '#07c160';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        function uploadQR() {
+            // After upload iframe loads, refresh the page to show new QR
+            document.getElementById('upload_iframe').onload = function() {
+                setTimeout(() => location.reload(), 500);
+            };
+            return true;
+        }
+
+        function saveSettings() {
+            const keys = ['home_title', 'home_subtitle', 'home_desc', 'kf_wechat', 'app_name'];
+            const data = {};
+            keys.forEach(k => {
+                const el = document.getElementById(k);
+                if (el) data[k] = el.value;
+            });
+
+            fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.ok) showToast('✅ 保存成功');
+                else showToast('❌ 保存失败: ' + JSON.stringify(d), true);
+            })
+            .catch(e => showToast('❌ 网络错误', true));
+        }
+    </script>
     {% endif %}
 </body>
 </html>

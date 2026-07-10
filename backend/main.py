@@ -3,9 +3,9 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db, Base
-from models import User, Fee, UserRole
+from models import User, Fee, SiteSetting, UserRole
 from schemas import *
-from auth import hash_password, verify_password, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
+from auth import hash_password, verify_password, create_access_token, get_current_user, get_admin_user, SECRET_KEY, ALGORITHM
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request, Form
@@ -374,6 +374,13 @@ def get_all_users():
     return result
 
 
+def get_all_settings():
+    db = next(get_db())
+    settings = db.query(SiteSetting).all()
+    db.close()
+    return {s.key: s.value for s in settings}
+
+
 @app.get("/admin/dashboard", response_class=HTMLResponse)
 def admin_dashboard(request: Request, msg: str = ""):
     admin = get_admin_from_cookie(request)
@@ -384,6 +391,7 @@ def admin_dashboard(request: Request, msg: str = ""):
         "stats": get_admin_stats(),
         "fees": get_all_fees(),
         "users": get_all_users(),
+        "settings": get_all_settings(),
     })
 
 
@@ -396,6 +404,59 @@ def admin_logout():
     </script>
     </body></html>"""
     return HTMLResponse(content=html)
+
+
+@app.get("/api/admin/settings")
+def get_settings(user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    settings = db.query(SiteSetting).all()
+    return {s.key: s.value for s in settings}
+
+
+@app.post("/api/admin/settings")
+def update_settings(data: dict, user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    for key, value in data.items():
+        setting = db.query(SiteSetting).filter(SiteSetting.key == key).first()
+        if setting:
+            setting.value = str(value)
+        else:
+            db.add(SiteSetting(key=key, value=str(value)))
+    db.commit()
+    return {"ok": True}
+
+
+@app.get("/admin/upload")
+def admin_upload_page(request: Request):
+    admin = get_admin_from_cookie(request)
+    if not admin:
+        return RedirectResponse(url="/admin?msg=请先登录", status_code=302)
+    import base64
+    return HTMLResponse(content="""<html><body><h2>上传二维码</h2>
+    <form action="/admin/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">上传</button>
+    </form>
+    <a href="/admin/dashboard">返回</a></body></html>""")
+
+
+@app.post("/admin/upload")
+async def admin_upload(request: Request, db: Session = Depends(get_db)):
+    admin = get_admin_from_cookie(request)
+    if not admin:
+        return RedirectResponse(url="/admin?msg=请先登录", status_code=302)
+    import base64
+    form = await request.form()
+    file = form.get("file")
+    if not file:
+        return HTMLResponse(content="<h2>请选择文件</h2><a href='/admin/upload'>返回</a>")
+    content = await file.read()
+    b64 = base64.b64encode(content).decode()
+    setting = db.query(SiteSetting).filter(SiteSetting.key == "kf_qrcode").first()
+    if setting:
+        setting.value = f"data:image/png;base64,{b64}"
+    else:
+        db.add(SiteSetting(key="kf_qrcode", value=f"data:image/png;base64,{b64}"))
+    db.commit()
+    return HTMLResponse(content="<h2>上传成功</h2><a href='/admin/dashboard'>返回后台</a>")
 
 
 # ========== 初始化 ==========
