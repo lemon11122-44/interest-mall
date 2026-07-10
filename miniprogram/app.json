@@ -1,16 +1,12 @@
 {
   "pages": [
     "pages/calculator/calculator",
-    "pages/mall/mall",
-    "pages/product/product",
-    "pages/cart/cart",
-    "pages/order/order",
-    "pages/mine/mine",
-    "pages/admin/admin"
+    "pages/fee/fee",
+    "pages/mine/mine"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTitleText": "利息计算器+商城",
+    "navigationBarTitleText": "扣费管理+利息计算器",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {
@@ -25,14 +21,9 @@
         "iconPath": "images/calc.png"
       },
       {
-        "pagePath": "pages/mall/mall",
-        "text": "商城",
+        "pagePath": "pages/fee/fee",
+        "text": "扣费管理",
         "iconPath": "images/mall.png"
-      },
-      {
-        "pagePath": "pages/cart/cart",
-        "text": "购物车",
-        "iconPath": "images/cart.png"
       },
       {
         "pagePath": "pages/mine/mine",

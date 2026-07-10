@@ -1,0 +1,83 @@
+<navigation-bar title="扣费管理" back="{{false}}" color="black" background="#fff" />
+<scroll-view class="page" scroll-y>
+  <!-- 统计卡片 -->
+  <view class="stats-row" wx:if="{{stats}}">
+    <view class="stat-item">
+      <text class="stat-num">¥{{stats.total_monthly}}</text>
+      <text class="stat-label">每月扣费</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">¥{{stats.total_yearly}}</text>
+      <text class="stat-label">每年扣费</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.fee_count}}</text>
+      <text class="stat-label">项目数</text>
+    </view>
+  </view>
+
+  <!-- 分类统计 -->
+  <view class="category-section" wx:if="{{stats && stats.by_category}}">
+    <view class="cat-item" wx:for="{{stats.by_category}}" wx:key="*this">
+      <text class="cat-name">{{item.key}}</text>
+      <view class="cat-bar-bg">
+        <view class="cat-bar" style="width:{{item.value/stats.total_monthly*100}}%"></view>
+      </view>
+      <text class="cat-amount">¥{{item.value}}</text>
+    </view>
+  </view>
+
+  <!-- 扣费列表 -->
+  <view class="fee-list">
+    <view class="fee-item {{!item.is_active?'inactive':''}}" wx:for="{{fees}}" wx:key="id" data-fee="{{item}}" bind:tap="showEditForm">
+      <view class="fee-top">
+        <text class="fee-platform">{{item.platform}}</text>
+        <text class="fee-amount">¥{{item.amount}}</text>
+      </view>
+      <view class="fee-meta">
+        <text wx:if="{{item.description}}">{{item.description}}</text>
+        <text>{{getCycleText(item.cycle)}}</text>
+        <text>分类: {{item.category}}</text>
+        <text wx:if="{{item.next_date}}">下次: {{formatDate(item.next_date)}}</text>
+      </view>
+      <text class="fee-del" bind:tap="deleteFee" data-id="{{item.id}}" catch:tap>删除</text>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{fees.length===0}}">
+    <text>还没有扣费记录</text>
+    <text class="empty-sub">点击下方按钮添加</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="add-btn-wrap">
+    <button class="add-btn" bind:tap="showAddForm">+ 添加扣费</button>
+  </view>
+
+  <!-- 表单弹窗 -->
+  <view class="modal-overlay {{showForm?'show':''}}" bind:tap="hideForm"></view>
+  <view class="modal {{showForm?'show':''}}">
+    <view class="modal-title">{{editId?'编辑':'添加'}}扣费</view>
+
+    <input class="form-input" placeholder="平台名称（如 腾讯视频）" value="{{platform}}" bindinput="onInput" data-field="platform" />
+    <input class="form-input" placeholder="扣费说明（可选）" value="{{description}}" bindinput="onInput" data-field="description" />
+    <input class="form-input" type="digit" placeholder="扣费金额" value="{{amount}}" bindinput="onInput" data-field="amount" />
+
+    <view class="form-label">扣费周期</view>
+    <view class="option-row">
+      <view class="option {{cycle==='monthly'?'active':''}}" wx:for="{{cycleOptions}}" wx:key="*this" bind:tap="selectCycle" data-val="{{item}}">{{cycleLabels[item]}}</view>
+    </view>
+
+    <view class="form-label">分类</view>
+    <view class="option-row">
+      <view class="option {{category===item?'active':''}}" wx:for="{{categoryOptions}}" wx:key="*this" bind:tap="selectCategory" data-val="{{item}}">{{item}}</view>
+    </view>
+
+    <input class="form-input" placeholder="下次扣费日期（可选，如 2026-08-01）" value="{{next_date}}" bindinput="onInput" data-field="next_date" />
+
+    <view class="modal-actions">
+      <button class="btn-cancel" bind:tap="hideForm">取消</button>
+      <button class="btn-save" bind:tap="saveFee">保存</button>
+    </view>
+  </view>
+</scroll-view>

@@ -21,8 +21,8 @@ const request = (url, method = "GET", data = {}) => {
         }
       },
       fail: (err) => {
-        console.error("网络错误:", err)
-        wx.showToast({ title: "网络错误，请检查域名白名单配置", icon: "none" });
+        console.error("网络错误:", err);
+        wx.showToast({ title: "网络错误", icon: "none" });
         reject(err);
       },
     });
@@ -30,31 +30,19 @@ const request = (url, method = "GET", data = {}) => {
 };
 
 module.exports = {
+  // 利息计算器
   calcMode1: (data) => request("/api/calculator/mode1", "POST", data),
   calcMode2: (data) => request("/api/calculator/mode2", "POST", data),
+
+  // 用户
   register: (data) => request("/api/auth/register", "POST", data),
   login: (data) => request("/api/auth/login", "POST", data),
   getUserInfo: () => request("/api/user/me"),
-  getProducts: (page = 1, category = "") =>
-    request(`/api/products?page=${page}&pageSize=20&category=${category}`),
-  getProduct: (id) => request(`/api/products/${id}`),
-  getCart: () => request("/api/cart"),
-  addCart: (data) => request("/api/cart", "POST", data),
-  updateCart: (id, data) => request(`/api/cart/${id}`, "PUT", data),
-  removeCart: (id) => request(`/api/cart/${id}`, "DELETE"),
-  clearCart: () => request("/api/cart", "DELETE"),
-  createOrder: (data) => request("/api/orders", "POST", data),
-  getOrders: () => request("/api/orders"),
-  getOrder: (id) => request(`/api/orders/${id}`),
-  payOrder: (id) => request(`/api/orders/${id}/pay`, "POST"),
-  cancelOrder: (id) => request(`/api/orders/${id}/cancel`, "POST"),
-  adminProducts: (page = 1) => request(`/api/admin/products/all?page=${page}`),
-  createProduct: (data) => request("/api/admin/products", "POST", data),
-  updateProduct: (id, data) => request(`/api/admin/products/${id}`, "PUT", data),
-  deleteProduct: (id) => request(`/api/admin/products/${id}`, "DELETE"),
-  adminOrders: (status = "") => request(`/api/admin/orders?status=${status}`),
-  updateOrderStatus: (id, status) =>
-    request(`/api/admin/orders/${id}/status?status=${status}`, "PUT"),
-  adminUsers: () => request("/api/admin/users"),
-  adminStats: () => request("/api/admin/stats"),
+
+  // 扣费管理
+  getFees: () => request("/api/fees"),
+  createFee: (data) => request("/api/fees", "POST", data),
+  updateFee: (id, data) => request(`/api/fees/${id}`, "PUT", data),
+  deleteFee: (id) => request(`/api/fees/${id}`, "DELETE"),
+  getFeeStats: () => request("/api/fees/stats"),
 };

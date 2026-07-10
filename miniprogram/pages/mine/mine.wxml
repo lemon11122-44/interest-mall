@@ -19,14 +19,6 @@
   </view>
 
   <view class="menu-list" wx:if="{{isLoggedIn}}">
-    <view class="menu-item" bind:tap="goOrders">
-      <text>📋 我的订单</text>
-      <text>></text>
-    </view>
-    <view class="menu-item" wx:if="{{user.role==='admin'}}" bind:tap="goAdmin">
-      <text>⚙️ 后台管理</text>
-      <text>></text>
-    </view>
     <view class="menu-item" bind:tap="logout">
       <text>🚪 退出登录</text>
       <text>></text>

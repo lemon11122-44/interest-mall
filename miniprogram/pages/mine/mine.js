@@ -34,12 +34,12 @@ Page({
     } catch { }
   },
 
-  goOrders() { wx.navigateTo({ url: "/pages/order/order" }); },
-  goAdmin() { wx.navigateTo({ url: "/pages/admin/admin" }); },
-
   logout() {
-    wx.showModal({ title: "提示", content: "确定退出登录？", success: (r) => {
-      if (r.confirm) { getApp().logout(); this.setData({ user: null, isLoggedIn: false }); }
-    }});
+    wx.showModal({
+      title: "提示", content: "确定退出登录？",
+      success: (r) => {
+        if (r.confirm) { getApp().logout(); this.setData({ user: null, isLoggedIn: false }); }
+      },
+    });
   },
 });
