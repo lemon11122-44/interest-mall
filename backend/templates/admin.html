@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扣费管理后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: linear-gradient(135deg, #07c160, #06ad56); color: #fff; padding: 24px; }
+        .header h1 { font-size: 22px; }
+        .header p { opacity: 0.8; margin-top: 4px; font-size: 14px; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+        .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .stat-num { font-size: 28px; font-weight: 700; color: #e53935; display: block; }
+        .stat-label { font-size: 13px; color: #999; margin-top: 6px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; padding: 10px 8px; color: #999; font-weight: 500; border-bottom: 2px solid #f0f0f0; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; }
+        tr:hover td { background: #f9f9f9; }
+        .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; background: #e8f5e9; color: #2e7d32; }
+        .tag.one_time { background: #fff3e0; color: #ef6c00; }
+        .tag.inactive { background: #fce4ec; color: #c62828; }
+        .badge { background: #07c160; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
+        .login-box { max-width: 360px; margin: 80px auto; background: #fff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .login-box h2 { text-align: center; margin-bottom: 24px; }
+        input { width: 100%; border: 2px solid #eee; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; font-size: 14px; outline: none; }
+        input:focus { border-color: #07c160; }
+        button { width: 100%; padding: 12px; background: #07c160; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #06ad56; }
+        .error { color: #e53935; text-align: center; margin-top: 12px; font-size: 14px; }
+        .logout { float: right; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+        .cat-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #07c160, #e53935); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    {% if not logged_in %}
+    <div class="container">
+        <div class="login-box">
+            <h2>🔐 后台管理登录</h2>
+            <form method="post">
+                <input type="text" name="username" placeholder="用户名" required>
+                <input type="password" name="password" placeholder="密码" required>
+                <button type="submit">登录</button>
+                {% if error %}<div class="error">{{ error }}</div>{% endif %}
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="header">
+        <div class="container" style="padding:0">
+            <a href="/admin/logout" class="logout">退出</a>
+            <h1>📊 扣费管理后台</h1>
+            <p>管理员: {{ admin_name }}</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card"><span class="stat-num">{{ stats.fee_count }}</span><span class="stat-label">扣费项目</span></div>
+            <div class="stat-card"><span class="stat-num">{{ stats.user_count }}</span><span class="stat-label">用户数</span></div>
+            <div class="stat-card"><span class="stat-num">¥{{ stats.total_monthly }}</span><span class="stat-label">月总扣费</span></div>
+            <div class="stat-card"><span class="stat-num">¥{{ stats.total_yearly }}</span><span class="stat-label">年总扣费</span></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📋 全部扣费记录</div>
+            {% if fees %}
+            <table>
+                <thead>
+                    <tr><th>用户</th><th>平台</th><th>金额</th><th>周期</th><th>分类</th><th>下次扣费</th><th>状态</th></tr>
+                </thead>
+                <tbody>
+                    {% for f in fees %}
+                    <tr>
+                        <td><span class="badge">{{ f.username }}</span></td>
+                        <td><strong>{{ f.platform }}</strong></td>
+                        <td>¥{{ f.amount }}</td>
+                        <td>{{ f.cycle }}</td>
+                        <td>{{ f.category }}</td>
+                        <td>{{ f.next_date[:10] if f.next_date else '-' }}</td>
+                        <td><span class="tag {{ 'inactive' if not f.is_active else '' }}">{{ '有效' if f.is_active else '失效' }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">暂无扣费记录</div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="card-title">👥 用户列表</div>
+            {% if users %}
+            <table>
+                <thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>角色</th><th>注册时间</th><th>扣费项目数</th></tr></thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td><strong>{{ u.username }}</strong></td>
+                        <td>{{ u.nickname }}</td>
+                        <td>{{ u.role }}</td>
+                        <td>{{ u.created_at[:10] if u.created_at else '-' }}</td>
+                        <td>{{ u.fee_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
