@@ -273,6 +273,22 @@ def fee_stats(user: User = Depends(get_current_user), db: Session = Depends(get_
 # ========== 后台管理（Web页面）==========
 @app.get("/admin", response_class=HTMLResponse)
 def admin_page(request: Request, msg: str = ""):
+    # 检查是否有token参数，有的话设置cookie
+    token = request.query_params.get("token")
+    if token:
+        from jose import jwt
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            db = next(get_db())
+            user = db.query(User).filter(User.id == int(payload["sub"])).first()
+            db.close()
+            if user and user.role == "admin":
+                return templates.TemplateResponse(request, "admin.html",
+                    {"logged_in": True, "admin_name": user.nickname,
+                     "stats": get_admin_stats(), "fees": get_all_fees(),
+                     "users": get_all_users()})
+        except:
+            pass
     return templates.TemplateResponse(request, "admin.html",
         {"logged_in": False, "error": msg})
 
@@ -285,83 +301,101 @@ def admin_login(request: Request, username: str = Form(...), password: str = For
         return templates.TemplateResponse(request, "admin.html",
             {"logged_in": False, "error": "用户名或密码错误"})
     token = create_access_token({"sub": user.id, "role": "admin"})
-    resp = RedirectResponse(url="/admin/dashboard", status_code=302)
-    resp.set_cookie(key="admin_token", value=token)
-    return resp
+    # 用HTML+JS方式设置cookie再跳转，比RedirectResponse更可靠
+    html = f"""<html><body>
+    <script>
+        document.cookie = "admin_token={token}; path=/";
+        window.location.href = "/admin/dashboard";
+    </script>
+    </body></html>"""
+    return HTMLResponse(content=html)
 
 
-def get_admin_from_cookie(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("admin_token")
+def get_admin_from_cookie(request: Request):
+    token = request.cookies.get("admin_token") or request.query_params.get("token")
     if not token:
         return None
-    from jose import jwt, JWTError
+    from jose import jwt
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user = db.query(User).filter(User.id == int(payload["sub"])).first()
-        if user and user.role == "admin":
-            return user
+        return {"id": int(payload["sub"]), "role": payload.get("role")}
     except:
-        pass
-    return None
+        return None
 
 
-@app.get("/admin/dashboard", response_class=HTMLResponse)
-def admin_dashboard(request: Request, db: Session = Depends(get_db)):
-    admin = get_admin_from_cookie(request, db)
-    if not admin:
-        return RedirectResponse(url="/admin?msg=请先登录", status_code=302)
-
+def get_admin_stats():
+    db = next(get_db())
     users = db.query(User).all()
-    fees = db.query(Fee).order_by(Fee.created_at.desc()).all()
+    fees = db.query(Fee).all()
     active_fees = [f for f in fees if f.is_active]
-
     total_monthly = 0
     for f in active_fees:
         if f.cycle == "monthly": total_monthly += f.amount
         elif f.cycle == "quarterly": total_monthly += f.amount / 3
         elif f.cycle == "yearly": total_monthly += f.amount / 12
+    db.close()
+    return {"fee_count": len(fees), "user_count": len(users),
+            "total_monthly": round(total_monthly, 2),
+            "total_yearly": round(total_monthly * 12, 2)}
 
-    user_fee_counts = {u.id: 0 for u in users}
-    for f in fees:
-        if f.user_id in user_fee_counts:
-            user_fee_counts[f.user_id] += 1
 
-    fee_list = []
+def get_all_fees():
+    db = next(get_db())
+    fees = db.query(Fee).order_by(Fee.created_at.desc()).all()
+    users = {u.id: u for u in db.query(User).all()}
+    result = []
     for f in fees:
-        u = next((u for u in users if u.id == f.user_id), None)
-        fee_list.append({
+        u = users.get(f.user_id)
+        result.append({
             "id": f.id, "platform": f.platform, "amount": f.amount,
-            "cycle": f.cycle, "category": f.category, "next_date": str(f.next_date or ""),
-            "is_active": f.is_active,
+            "cycle": f.cycle, "category": f.category,
+            "next_date": str(f.next_date or ""), "is_active": f.is_active,
             "username": u.username if u else "未知",
         })
+    db.close()
+    return result
 
-    user_list = []
+
+def get_all_users():
+    db = next(get_db())
+    users = db.query(User).all()
+    fees = db.query(Fee).all()
+    fee_counts = {}
+    for f in fees:
+        fee_counts[f.user_id] = fee_counts.get(f.user_id, 0) + 1
+    result = []
     for u in users:
-        user_list.append({
+        result.append({
             "id": u.id, "username": u.username, "nickname": u.nickname,
             "role": u.role, "created_at": str(u.created_at or ""),
-            "fee_count": user_fee_counts[u.id],
+            "fee_count": fee_counts.get(u.id, 0),
         })
+    db.close()
+    return result
 
+
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+def admin_dashboard(request: Request, msg: str = ""):
+    admin = get_admin_from_cookie(request)
+    if not admin:
+        return RedirectResponse(url="/admin?msg=请先登录", status_code=302)
     return templates.TemplateResponse(request, "admin.html", {
-        "logged_in": True, "admin_name": admin.nickname,
-        "stats": {
-            "fee_count": len(fees),
-            "user_count": len(users),
-            "total_monthly": round(total_monthly, 2),
-            "total_yearly": round(total_monthly * 12, 2),
-        },
-        "fees": fee_list,
-        "users": user_list,
+        "logged_in": True, "admin_name": "管理员",
+        "stats": get_admin_stats(),
+        "fees": get_all_fees(),
+        "users": get_all_users(),
     })
 
 
 @app.get("/admin/logout")
 def admin_logout():
-    resp = RedirectResponse(url="/admin", status_code=302)
-    resp.delete_cookie("admin_token")
-    return resp
+    html = """<html><body>
+    <script>
+        document.cookie = "admin_token=; path=/; max-age=0";
+        window.location.href = "/admin";
+    </script>
+    </body></html>"""
+    return HTMLResponse(content=html)
 
 
 # ========== 初始化 ==========
