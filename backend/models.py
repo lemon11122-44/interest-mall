@@ -37,6 +37,7 @@ class Fee(Base):
     cycle = Column(String(20), default="monthly")             # 周期: monthly/quarterly/yearly/one_time
     next_date = Column(DateTime, nullable=True)               # 下次扣费日期
     category = Column(String(50), default="其他")             # 分类
+    image_url = Column(String(500), default="")                # 平台图标/二维码
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

@@ -1,0 +1,5 @@
+<navigation-bar title="{{title}}" color="black" background="#fff" />
+<view class="page-placeholder">
+  <text class="placeholder-text">等额本金</text>
+  <text class="placeholder-desc">计算功能开发中，敬请期待</text>
+</view>

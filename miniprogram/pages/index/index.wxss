@@ -1,0 +1,80 @@
+page { background: #f5f7fa; font-size: 28rpx; color: #000; }
+
+.page { padding: 0 24rpx; padding-top: 88rpx; }
+
+/* 顶部标题栏 */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16rpx 0; margin-bottom: 20rpx;
+}
+.header-left { display: flex; align-items: center; }
+.logo-icon {
+  width: 48rpx; height: 48rpx; background: #1677FF; border-radius: 10rpx;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 28rpx; font-weight: 700; margin-right: 12rpx;
+}
+.header-title { font-size: 36rpx; font-weight: 700; color: #000; }
+.capsule {
+  display: flex; align-items: center;
+  background: #f0f0f0; border-radius: 40rpx; padding: 4rpx;
+}
+.capsule-item {
+  padding: 8rpx 16rpx; font-size: 24rpx; color: #333;
+}
+.capsule-divider {
+  width: 1rpx; height: 24rpx; background: #ddd;
+}
+
+/* LPR卡片 */
+.lpr-card {
+  background: #1677FF; border-radius: 20rpx; padding: 28rpx;
+  margin-bottom: 32rpx; position: relative;
+}
+.lpr-title { color: rgba(255,255,255,0.9); font-size: 26rpx; }
+.lpr-date {
+  position: absolute; top: 28rpx; right: 28rpx;
+  color: rgba(255,255,255,0.7); font-size: 22rpx;
+}
+.lpr-cols {
+  display: flex; align-items: center; justify-content: space-around;
+  margin-top: 20rpx;
+}
+.lpr-col { flex: 1; text-align: center; }
+.lpr-num { color: #fff; font-size: 52rpx; font-weight: 700; display: block; }
+.lpr-label { color: rgba(255,255,255,0.8); font-size: 24rpx; margin-top: 8rpx; display: block; }
+.lpr-divider { width: 1rpx; height: 60rpx; background: rgba(255,255,255,0.3); }
+
+/* 区块 */
+.section { margin-bottom: 32rpx; }
+.section-title { font-size: 32rpx; font-weight: 700; color: #000; display: block; margin-bottom: 20rpx; }
+
+/* 工具宫格 */
+.tool-grid { margin: 0 -8rpx; }
+.tool-row { display: flex; margin-bottom: 16rpx; }
+.tool-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  margin: 0 8rpx; padding: 20rpx 0; border-radius: 16rpx;
+  background: #fff; transition: transform 0.1s;
+}
+.tool-hover { transform: scale(0.95); }
+.tool-icon {
+  width: 88rpx; height: 88rpx; border-radius: 20rpx;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 12rpx;
+}
+.tool-icon-text { color: #fff; font-size: 36rpx; font-weight: 700; }
+.tool-name { font-size: 24rpx; color: #000; }
+
+/* 轮播 */
+.banner-swiper {
+  height: 260rpx; border-radius: 16rpx; overflow: hidden;
+}
+.banner-card {
+  height: 100%; border-radius: 16rpx; padding: 36rpx;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.banner-title { color: #fff; font-size: 36rpx; font-weight: 700; display: block; }
+.banner-subtitle { color: rgba(255,255,255,0.85); font-size: 26rpx; margin-top: 12rpx; display: block; }
+.banner-more { color: #fff; font-size: 26rpx; margin-top: 20rpx; display: block; }
+
+/* 底部安全区 */
+.bottom-safe { height: 120rpx; }

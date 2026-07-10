@@ -301,14 +301,16 @@ def admin_login(request: Request, username: str = Form(...), password: str = For
         return templates.TemplateResponse(request, "admin.html",
             {"logged_in": False, "error": "用户名或密码错误"})
     token = create_access_token({"sub": user.id, "role": "admin"})
-    # 用HTML+JS方式设置cookie再跳转，比RedirectResponse更可靠
-    html = f"""<html><body>
-    <script>
-        document.cookie = "admin_token={token}; path=/";
-        window.location.href = "/admin/dashboard";
-    </script>
-    </body></html>"""
-    return HTMLResponse(content=html)
+    from starlette.responses import Response
+    resp = templates.TemplateResponse(request, "admin.html", {
+        "logged_in": True, "admin_name": "管理员",
+        "stats": get_admin_stats(),
+        "fees": get_all_fees(),
+        "users": get_all_users(),
+        "settings": get_all_settings(),
+    })
+    resp.set_cookie(key="admin_token", value=token, path="/")
+    return resp
 
 
 def get_admin_from_cookie(request: Request):
@@ -350,6 +352,7 @@ def get_all_fees():
             "id": f.id, "platform": f.platform, "amount": f.amount,
             "cycle": f.cycle, "category": f.category,
             "next_date": str(f.next_date or ""), "is_active": f.is_active,
+            "image_url": f.image_url or "",
             "username": u.username if u else "未知",
         })
     db.close()
@@ -407,13 +410,19 @@ def admin_logout():
 
 
 @app.get("/api/admin/settings")
-def get_settings(user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+def get_settings(request: Request, db: Session = Depends(get_db)):
+    admin = get_admin_from_cookie(request)
+    if not admin:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     settings = db.query(SiteSetting).all()
     return {s.key: s.value for s in settings}
 
 
 @app.post("/api/admin/settings")
-def update_settings(data: dict, user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+def update_settings(request: Request, data: dict, db: Session = Depends(get_db)):
+    admin = get_admin_from_cookie(request)
+    if not admin:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     for key, value in data.items():
         setting = db.query(SiteSetting).filter(SiteSetting.key == key).first()
         if setting:
@@ -457,6 +466,37 @@ async def admin_upload(request: Request, db: Session = Depends(get_db)):
         db.add(SiteSetting(key="kf_qrcode", value=f"data:image/png;base64,{b64}"))
     db.commit()
     return HTMLResponse(content="<h2>上传成功</h2><a href='/admin/dashboard'>返回后台</a>")
+
+
+@app.get("/api/admin/fees/{fee_id}")
+def admin_get_fee(fee_id: int, db: Session = Depends(get_db)):
+    fee = db.query(Fee).filter(Fee.id == fee_id).first()
+    if not fee:
+        raise HTTPException(404, detail="扣费记录不存在")
+    return {
+        "id": fee.id, "platform": fee.platform, "description": fee.description,
+        "amount": fee.amount, "cycle": fee.cycle, "category": fee.category,
+        "next_date": str(fee.next_date or ""), "is_active": fee.is_active,
+        "image_url": fee.image_url or "",
+    }
+
+
+@app.post("/api/admin/fees/{fee_id}")
+def admin_update_fee(fee_id: int, data: dict, db: Session = Depends(get_db)):
+    fee = db.query(Fee).filter(Fee.id == fee_id).first()
+    if not fee:
+        raise HTTPException(404, detail="扣费记录不存在")
+    for key in ["platform", "description", "amount", "cycle", "category", "is_active", "image_url"]:
+        if key in data and data[key] is not None:
+            if key == "amount":
+                setattr(fee, key, float(data[key]))
+            elif key == "is_active":
+                setattr(fee, key, bool(data[key]))
+            else:
+                setattr(fee, key, str(data[key]))
+    from datetime import datetime
+    db.commit()
+    return {"ok": True}
 
 
 # ========== 初始化 ==========

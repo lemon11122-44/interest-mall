@@ -1,0 +1,4 @@
+// loan.js
+Page({
+  data: {}
+})

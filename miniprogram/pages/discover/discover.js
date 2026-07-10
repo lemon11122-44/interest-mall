@@ -1,0 +1,4 @@
+// discover.js
+Page({
+  data: {}
+})

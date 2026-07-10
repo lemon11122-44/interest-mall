@@ -72,6 +72,7 @@ class FeeCreate(BaseModel):
     cycle: str = Field(default="monthly", pattern="^(monthly|quarterly|yearly|one_time)$")
     next_date: Optional[str] = None
     category: str = "其他"
+    image_url: str = ""
 
 
 class FeeUpdate(BaseModel):
@@ -82,6 +83,7 @@ class FeeUpdate(BaseModel):
     next_date: Optional[str] = None
     category: Optional[str] = None
     is_active: Optional[bool] = None
+    image_url: Optional[str] = None
 
 
 class FeeInfo(BaseModel):
@@ -93,6 +95,7 @@ class FeeInfo(BaseModel):
     cycle: str
     next_date: Optional[datetime] = None
     category: str
+    image_url: str = ""
     is_active: bool
     created_at: Optional[datetime] = None
     monthly_cost: float = 0

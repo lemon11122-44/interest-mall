@@ -1,37 +1,62 @@
 {
   "pages": [
-    "pages/calculator/calculator",
-    "pages/fee/fee",
-    "pages/mine/mine"
+    "pages/index/index",
+    "pages/loan/loan",
+    "pages/finance/finance",
+    "pages/tools/tools",
+    "pages/discover/discover",
+    "pages/tool/debx/debx",
+    "pages/tool/debj/debj",
+    "pages/tool/xxhb/xxhb",
+    "pages/tool/arjs/arjs",
+    "pages/tool/dqlc/dqlc",
+    "pages/tool/fljs/fljs",
+    "pages/tool/llzh/llzh",
+    "pages/tool/qrnh/qrnh",
+    "pages/knowledge/knowledge"
   ],
   "window": {
+    "navigationStyle": "custom",
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTitleText": "扣费管理+利息计算器",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#999",
-    "selectedColor": "#07c160",
+    "color": "#999999",
+    "selectedColor": "#1677FF",
     "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/calculator/calculator",
-        "text": "利息计算",
-        "iconPath": "images/calc.png"
+        "pagePath": "pages/index/index",
+        "iconPath": "images/tab_home.png",
+        "selectedIconPath": "images/tab_home_hl.png",
+        "text": "首页"
       },
       {
-        "pagePath": "pages/fee/fee",
-        "text": "扣费管理",
-        "iconPath": "images/mall.png"
+        "pagePath": "pages/loan/loan",
+        "iconPath": "images/tab_loan.png",
+        "selectedIconPath": "images/tab_loan_hl.png",
+        "text": "贷款"
       },
       {
-        "pagePath": "pages/mine/mine",
-        "text": "我的",
-        "iconPath": "images/mine.png"
+        "pagePath": "pages/finance/finance",
+        "iconPath": "images/tab_finance.png",
+        "selectedIconPath": "images/tab_finance_hl.png",
+        "text": "理财"
+      },
+      {
+        "pagePath": "pages/tools/tools",
+        "iconPath": "images/tab_tools.png",
+        "selectedIconPath": "images/tab_tools_hl.png",
+        "text": "工具"
+      },
+      {
+        "pagePath": "pages/discover/discover",
+        "iconPath": "images/tab_discover.png",
+        "selectedIconPath": "images/tab_discover_hl.png",
+        "text": "发现"
       }
     ]
   },
-  "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

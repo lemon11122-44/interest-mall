@@ -1,0 +1,70 @@
+<view class="page">
+  <!-- 顶部标题栏 -->
+  <view class="header">
+    <view class="header-left">
+      <view class="logo-icon">%</view>
+      <text class="header-title">IRR计算器</text>
+    </view>
+    <view class="header-right">
+      <view class="capsule">
+        <view class="capsule-item">···</view>
+        <view class="capsule-divider"></view>
+        <view class="capsule-item">☎</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- LPR蓝色卡片 -->
+  <view class="lpr-card">
+    <view class="lpr-title">今日LPR利率</view>
+    <text class="lpr-date">{{date}}</text>
+    <view class="lpr-cols">
+      <view class="lpr-col">
+        <text class="lpr-num">{{lpr.year1}}%</text>
+        <text class="lpr-label">1年期LPR</text>
+      </view>
+      <view class="lpr-divider"></view>
+      <view class="lpr-col">
+        <text class="lpr-num">{{lpr.year5}}%</text>
+        <text class="lpr-label">5年期LPR</text>
+      </view>
+      <view class="lpr-divider"></view>
+      <view class="lpr-col">
+        <text class="lpr-num">{{lpr.loanLimit}}%</text>
+        <text class="lpr-label">贷款上限</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 常用工具 -->
+  <view class="section">
+    <text class="section-title">常用工具</text>
+    <view class="tool-grid">
+      <view class="tool-row" wx:for="{{tools}}" wx:key="index">
+        <view class="tool-item" wx:for="{{item}}" wx:for-item="tool" wx:key="id" data-id="{{tool.id}}" bind:tap="onToolTap" hover-class="tool-hover">
+          <view class="tool-icon" style="background:{{tool.bg}}">
+            <text class="tool-icon-text">{{tool.icon}}</text>
+          </view>
+          <text class="tool-name">{{tool.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 金融知识轮播 -->
+  <view class="section">
+    <text class="section-title">金融知识</text>
+    <swiper class="banner-swiper" indicator-dots="{{true}}" indicator-color="#rgba(255,255,255,0.4)" indicator-active-color="#ffffff" autoplay="{{true}}" interval="5000" circular="{{true}}" bindchange="onBannerChange" data-id="banner" bind:tap="onBannerTap">
+      <swiper-item wx:for="{{banners}}" wx:key="index">
+        <view class="banner-card" style="background:{{item.bg}}">
+          <text class="banner-title">{{item.title}}</text>
+          <text class="banner-subtitle">{{item.subtitle}}</text>
+          <text class="banner-more">了解更多 →</text>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="bottom-safe"></view>
+</view>

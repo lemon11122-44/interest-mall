@@ -1,6 +1,6 @@
-// 直接请求云托管后端（需要配域名白名单）
+// 小程序配置
 const CONFIG = {
-  API_BASE: "https://lemon1-280065-9-1452195104.sh.run.tcloudbase.com",
+  API_BASE: "http://192.168.100.20:8000",   // 本地开发（手机预览用局域网IP）
 };
 
 module.exports = CONFIG;
