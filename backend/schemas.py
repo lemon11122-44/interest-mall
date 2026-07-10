@@ -5,26 +5,32 @@ from datetime import datetime
 
 # ========== 利息计算器 ==========
 class CalculatorInputMode1(BaseModel):
-    principal: float = Field(..., gt=0, description="本金")
+    """模式1: 已知年利率"""
+    principal: float = Field(..., gt=0, description="借款金额")
     annual_rate: float = Field(..., gt=0, description="年利率(%)")
     months: int = Field(..., gt=0, le=1200, description="借款期限(月)")
+    repayment_method: str = Field(default="debx", pattern="^(debx|debj)$", description="还款方式: debx等额本息, debj等额本金")
 
 
 class CalculatorInputMode2(BaseModel):
+    """模式2: 已知总还款额，反推利率"""
     principal: float = Field(..., gt=0, description="借款金额(本金)")
     total_repayment: float = Field(..., gt=0, description="一共还了多少(总还款额)")
     months: int = Field(..., gt=0, le=1200, description="分期期数")
 
 
 class CalculatorOutput(BaseModel):
-    principal: float
-    months: int
-    annual_rate: float
-    total_interest: float
-    legal_interest: float
-    excess_interest: float
-    is_excessive: bool
-    monthly_payment: float
+    principal: float                    # 本金
+    months: int                         # 期数
+    annual_rate: float                  # 年利率(%)
+    monthly_rate: float                 # 月利率(%)
+    total_interest: float               # 总利息
+    total_repayment: float              # 本息合计
+    legal_interest: float               # 24%以内的合法利息
+    excess_interest: float              # 超出24%的利息
+    is_excessive: bool                  # 是否超出24%
+    monthly_payment: float              # 每月还款
+    repayment_method: str = "debx"      # 还款方式
 
 
 # ========== 用户 ==========
@@ -89,14 +95,14 @@ class FeeInfo(BaseModel):
     category: str
     is_active: bool
     created_at: Optional[datetime] = None
-    monthly_cost: float = 0  # 折算成每月费用
+    monthly_cost: float = 0
 
     class Config:
         from_attributes = True
 
 
 class FeeStats(BaseModel):
-    total_monthly: float = 0      # 每月总扣费
-    total_yearly: float = 0       # 每年总扣费
-    fee_count: int = 0            # 扣费项目数
-    by_category: dict = {}        # 按分类统计
+    total_monthly: float = 0
+    total_yearly: float = 0
+    fee_count: int = 0
+    by_category: dict = {}

@@ -26,33 +26,129 @@ def health():
 
 
 # ========== 利息计算器 ==========
+import math
+
+def calc_debx(principal, months, monthly_rate):
+    """等额本息计算"""
+    if monthly_rate == 0:
+        monthly = principal / months
+        return monthly, principal, 0
+    temp = (1 + monthly_rate) ** months
+    monthly = principal * monthly_rate * temp / (temp - 1)
+    total_repayment = monthly * months
+    total_interest = total_repayment - principal
+    return monthly, total_repayment, total_interest
+
+
+def calc_debj(principal, months, monthly_rate):
+    """等额本金计算"""
+    monthly_principal = principal / months
+    total_interest = 0
+    first_month = None
+    last_month = None
+    for i in range(1, months + 1):
+        remaining = principal - monthly_principal * (i - 1)
+        interest = remaining * monthly_rate
+        payment = monthly_principal + interest
+        total_interest += interest
+        if i == 1:
+            first_month = payment
+        if i == months:
+            last_month = payment
+    total_repayment = principal + total_interest
+    monthly = round((first_month + last_month) / 2, 2) if months > 0 else 0
+    return round(first_month, 2), round(last_month, 2), total_repayment, total_interest
+
+
+def calc_legal_excess(principal, months, monthly_rate):
+    """计算24%范围内的合法利息和超出部分"""
+    legal_monthly_rate = 0.24 / 12  # 24%年利率对应的月利率
+    # 用等额本息算出24%利率下的总利息
+    temp = (1 + legal_monthly_rate) ** months
+    monthly_legal = principal * legal_monthly_rate * temp / (temp - 1)
+    legal_total = monthly_legal * months - principal
+    # 实际总利息
+    if monthly_rate > 0:
+        temp2 = (1 + monthly_rate) ** months
+        monthly_actual = principal * monthly_rate * temp2 / (temp2 - 1)
+        actual_total = monthly_actual * months - principal
+    else:
+        actual_total = 0
+    excess = max(0, actual_total - legal_total)
+    return round(legal_total, 2), round(excess, 2), excess > 0
+
+
+def find_rate_binary_search(principal, months, monthly_payment):
+    """用二分法反推月利率"""
+    if monthly_payment * months <= principal:
+        return 0
+    low, high = 0.0, 1.0  # 月利率范围 0%~100%
+    for _ in range(200):
+        mid = (low + high) / 2
+        if mid == 0:
+            calc = principal / months
+        else:
+            temp = (1 + mid) ** months
+            calc = principal * mid * temp / (temp - 1)
+        if calc > monthly_payment:
+            high = mid
+        else:
+            low = mid
+    return round((low + high) / 2, 10)
+
+
 @app.post("/api/calculator/mode1", response_model=CalculatorOutput)
 def calc_mode1(input: CalculatorInputMode1):
-    p, r, m = input.principal, input.annual_rate / 100.0, input.months
-    total_int = p * r * m / 12
-    legal_int = p * 0.24 * m / 12
-    excess = max(0, total_int - legal_int)
-    monthly = (p + total_int) / m
-    return CalculatorOutput(principal=p, months=m, annual_rate=r * 100,
-        total_interest=round(total_int, 2), legal_interest=round(legal_int, 2),
-        excess_interest=round(excess, 2), is_excessive=excess > 0,
-        monthly_payment=round(monthly, 2))
+    p, r, m = input.principal, input.annual_rate, input.months
+    mr = r / 12 / 100  # 月利率（小数）
+    ar = r  # 年利率%
+
+    if input.repayment_method == "debj":
+        first_m, last_m, total_repay, total_int = calc_debj(p, m, mr)
+        monthly = first_m
+        month_range = f"{first_m:.2f}~{last_m:.2f}"
+    else:
+        monthly, total_repay, total_int = calc_debx(p, m, mr)
+        month_range = ""
+
+    legal_int, excess_int, is_excessive = calc_legal_excess(p, m, mr)
+
+    return CalculatorOutput(
+        principal=p, months=m, annual_rate=round(ar, 4),
+        monthly_rate=round(mr * 100, 4),
+        total_interest=round(total_int, 2),
+        total_repayment=round(total_repay, 2),
+        legal_interest=legal_int, excess_interest=excess_int,
+        is_excessive=is_excessive,
+        monthly_payment=round(monthly, 2),
+        repayment_method=input.repayment_method,
+    )
 
 
 @app.post("/api/calculator/mode2", response_model=CalculatorOutput)
 def calc_mode2(input: CalculatorInputMode2):
     p, tr, m = input.principal, input.total_repayment, input.months
-    ti = tr - p
-    if ti < 0:
-        raise HTTPException(status_code=400, detail="总还款额不能小于本金")
-    rate = (ti / p) / (m / 12) * 100
-    legal_int = p * 0.24 * m / 12
-    excess = max(0, ti - legal_int)
-    monthly = (p + ti) / m
-    return CalculatorOutput(principal=p, months=m, annual_rate=round(rate, 2),
-        total_interest=round(ti, 2), legal_interest=round(legal_int, 2),
-        excess_interest=round(excess, 2), is_excessive=excess > 0,
-        monthly_payment=round(monthly, 2))
+    monthly = tr / m
+    if monthly <= 0 or tr <= p:
+        raise HTTPException(status_code=400, detail="总还款额须大于本金")
+
+    # 二分法反推月利率
+    mr = find_rate_binary_search(p, m, monthly)
+    ar = mr * 12 * 100  # 年利率%
+
+    monthly_pay, total_repay, total_int = calc_debx(p, m, mr)
+    legal_int, excess_int, is_excessive = calc_legal_excess(p, m, mr)
+
+    return CalculatorOutput(
+        principal=p, months=m, annual_rate=round(ar, 4),
+        monthly_rate=round(mr * 100, 4),
+        total_interest=round(total_int, 2),
+        total_repayment=round(total_repay, 2),
+        legal_interest=legal_int, excess_interest=excess_int,
+        is_excessive=is_excessive,
+        monthly_payment=round(monthly_pay, 2),
+        repayment_method="debx",
+    )
 
 
 # ========== 用户 ==========
@@ -177,8 +273,8 @@ def fee_stats(user: User = Depends(get_current_user), db: Session = Depends(get_
 # ========== 后台管理（Web页面）==========
 @app.get("/admin", response_class=HTMLResponse)
 def admin_page(request: Request, msg: str = ""):
-    return templates.TemplateResponse("admin.html",
-        {"request": request, "logged_in": False, "error": msg})
+    return templates.TemplateResponse(request, "admin.html",
+        {"logged_in": False, "error": msg})
 
 
 @app.post("/admin")
@@ -186,8 +282,8 @@ def admin_login(request: Request, username: str = Form(...), password: str = For
                 db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if not user or user.role != "admin" or not verify_password(password, user.password_hash):
-        return templates.TemplateResponse("admin.html",
-            {"request": request, "logged_in": False, "error": "用户名或密码错误"})
+        return templates.TemplateResponse(request, "admin.html",
+            {"logged_in": False, "error": "用户名或密码错误"})
     token = create_access_token({"sub": user.id, "role": "admin"})
     resp = RedirectResponse(url="/admin/dashboard", status_code=302)
     resp.set_cookie(key="admin_token", value=token)
@@ -248,8 +344,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
             "fee_count": user_fee_counts[u.id],
         })
 
-    return templates.TemplateResponse("admin.html", {
-        "request": request, "logged_in": True, "admin_name": admin.nickname,
+    return templates.TemplateResponse(request, "admin.html", {
+        "logged_in": True, "admin_name": admin.nickname,
         "stats": {
             "fee_count": len(fees),
             "user_count": len(users),

@@ -56,6 +56,22 @@ page {
   background: #07c160;
   color: #fff;
 }
+.method-tabs {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+.method-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx;
+  font-size: 28rpx;
+}
+.method-tab.active {
+  background: #07c160;
+  color: #fff;
+}
 .result-item {
   display: flex;
   justify-content: space-between;
@@ -63,6 +79,7 @@ page {
   border-bottom: 1rpx solid #f0f0f0;
 }
 .result-item:last-child { border-bottom: none; }
+.big { font-size: 36rpx; font-weight: 700; color: #e53935; }
 .red { color: #e53935; font-weight: 600; }
 .green { color: #07c160; font-weight: 600; }
 .highlight { background: #fff3e0; margin: 0 -30rpx; padding: 16rpx 30rpx; }
