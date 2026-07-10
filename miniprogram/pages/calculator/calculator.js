@@ -1,7 +1,7 @@
 const api = require("../../utils/api");
 
 Page({
-  data: { mode: 1, principal: "", annual_rate: "", months: "", total_interest: "", result: null },
+  data: { mode: 1, principal: "", annual_rate: "", months: "", total_repayment: "", result: null },
 
   switchMode(e) {
     this.setData({ mode: parseInt(e.currentTarget.dataset.mode), result: null });
@@ -12,7 +12,7 @@ Page({
   },
 
   async calculate() {
-    const { mode, principal, annual_rate, months, total_interest } = this.data;
+    const { mode, principal, annual_rate, months, total_repayment } = this.data;
     if (!principal || !months) return wx.showToast({ title: "请填写完整信息", icon: "none" });
 
     try {
@@ -25,10 +25,10 @@ Page({
           months: parseInt(months),
         });
       } else {
-        if (!total_interest) return wx.showToast({ title: "请输入总利息", icon: "none" });
+        if (!total_repayment) return wx.showToast({ title: "请输入总还款额", icon: "none" });
         res = await api.calcMode2({
           principal: parseFloat(principal),
-          total_interest: parseFloat(total_interest),
+          total_repayment: parseFloat(total_repayment),
           months: parseInt(months),
         });
       }

@@ -40,7 +40,10 @@ def calc_mode1(input: CalculatorInputMode1):
 
 @app.post("/api/calculator/mode2", response_model=CalculatorOutput)
 def calc_mode2(input: CalculatorInputMode2):
-    p, ti, m = input.principal, input.total_interest, input.months
+    p, tr, m = input.principal, input.total_repayment, input.months
+    ti = tr - p  # 总利息 = 总还款额 - 本金
+    if ti < 0:
+        raise HTTPException(status_code=400, detail="总还款额不能小于本金")
     rate = (ti / p) / (m / 12) * 100
     legal_int = p * 0.24 * m / 12
     excess = max(0, ti - legal_int)

@@ -22,8 +22,8 @@
       <input class="input" type="digit" bindinput="onInput" data-field="annual_rate" placeholder="请输入年利率" />
     </view>
     <view class="field" wx:if="{{mode==2}}">
-      <text class="label">总利息（元）</text>
-      <input class="input" type="digit" bindinput="onInput" data-field="total_interest" placeholder="请输入总利息" />
+      <text class="label">一共还了多少（总还款额·元）</text>
+      <input class="input" type="digit" bindinput="onInput" data-field="total_repayment" placeholder="请输入总共还了多少钱" />
     </view>
 
     <button class="btn-primary" bind:tap="calculate">开始计算</button>

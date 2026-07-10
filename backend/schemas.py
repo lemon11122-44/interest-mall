@@ -8,11 +8,11 @@ class CalculatorInputMode1(BaseModel):
     annual_rate: float = Field(..., gt=0, description="年利率(%)")
     months: int = Field(..., gt=0, le=1200, description="借款期限(月)")
 
-
 class CalculatorInputMode2(BaseModel):
-    principal: float = Field(..., gt=0, description="本金")
-    total_interest: float = Field(..., ge=0, description="总利息")
-    months: int = Field(..., gt=0, le=1200, description="借款期限(月)")
+    """模式2: 已知本金、总还款额、借款期限"""
+    principal: float = Field(..., gt=0, description="借款金额(本金)")
+    total_repayment: float = Field(..., gt=0, description="一共还了多少(总还款额)")
+    months: int = Field(..., gt=0, le=1200, description="分期期数")
 
 
 class CalculatorOutput(BaseModel):
