@@ -5,7 +5,7 @@ page { background: #f5f7fa; font-size: 28rpx; color: #000; }
 /* 顶部标题栏 */
 .header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16rpx 0; margin-bottom: 20rpx;
+  padding: 16rpx 0; margin-bottom: 12rpx;
 }
 .header-left { display: flex; align-items: center; }
 .logo-icon {
@@ -24,25 +24,6 @@ page { background: #f5f7fa; font-size: 28rpx; color: #000; }
 .capsule-divider {
   width: 1rpx; height: 24rpx; background: #ddd;
 }
-
-/* LPR卡片 */
-.lpr-card {
-  background: #1677FF; border-radius: 20rpx; padding: 28rpx;
-  margin-bottom: 32rpx; position: relative;
-}
-.lpr-title { color: rgba(255,255,255,0.9); font-size: 26rpx; }
-.lpr-date {
-  position: absolute; top: 28rpx; right: 28rpx;
-  color: rgba(255,255,255,0.7); font-size: 22rpx;
-}
-.lpr-cols {
-  display: flex; align-items: center; justify-content: space-around;
-  margin-top: 20rpx;
-}
-.lpr-col { flex: 1; text-align: center; }
-.lpr-num { color: #fff; font-size: 52rpx; font-weight: 700; display: block; }
-.lpr-label { color: rgba(255,255,255,0.8); font-size: 24rpx; margin-top: 8rpx; display: block; }
-.lpr-divider { width: 1rpx; height: 60rpx; background: rgba(255,255,255,0.3); }
 
 /* 区块 */
 .section { margin-bottom: 32rpx; }
@@ -78,3 +59,14 @@ page { background: #f5f7fa; font-size: 28rpx; color: #000; }
 
 /* 底部安全区 */
 .bottom-safe { height: 120rpx; }
+
+/* 悬浮客服按钮 */
+.kf-float {
+  position: fixed; bottom: 160rpx; right: 30rpx;
+  width: 100rpx; height: 100rpx;
+  background: #1677FF; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(22,119,255,0.3);
+  z-index: 999;
+}
+.kf-icon { font-size: 48rpx; }

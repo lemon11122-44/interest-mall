@@ -13,6 +13,8 @@
     "pages/tool/fljs/fljs",
     "pages/tool/llzh/llzh",
     "pages/tool/qrnh/qrnh",
+    "pages/tool/ktx/ktx",
+    "pages/tool/mjdk/mjdk",
     "pages/knowledge/knowledge"
   ],
   "window": {

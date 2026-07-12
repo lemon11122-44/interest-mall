@@ -1,30 +1,53 @@
-// index.js - 首页
+const CONFIG = require("../../utils/config")
+const API_BASE = CONFIG.API_BASE
+
 Page({
   data: {
-    date: '2026年7月11日',
-    lpr: { year1: '3.0', year5: '3.5', loanLimit: '12' },
     tools: [
       [
-        { id: 'debx', icon: '月', color: '#1677FF', name: '等额月供', bg: '#1677FF' },
-        { id: 'debj', icon: '本', color: '#1677FF', name: '等额本金', bg: '#1677FF' },
-        { id: 'xxhb', icon: '息', color: '#FF9922', name: '先息后本', bg: '#FF9922' },
-        { id: 'arjs', icon: '日', color: '#FF9922', name: '按日计息', bg: '#FF9922' }
+        { id: 'debx', icon: '月', color: '#1677FF', name: '等额本息测算', bg: '#1677FF' },
+        { id: 'debj', icon: '本', color: '#1677FF', name: '等额本金测算', bg: '#1677FF' },
+        { id: 'xxhb', icon: '息', color: '#FF9922', name: '先息后本测算', bg: '#FF9922' },
+        { id: 'arjs', icon: '日', color: '#FF9922', name: '按日计息测算', bg: '#FF9922' }
       ],
       [
-        { id: 'dqlc', icon: '定', color: '#00BB77', name: '定期理财', bg: '#00BB77' },
-        { id: 'fljs', icon: '复', color: '#00BB77', name: '复利计算', bg: '#00BB77' },
-        { id: 'llzh', icon: '转', color: '#9966EE', name: '利率转换', bg: '#9966EE' },
-        { id: 'qrnh', icon: '七', color: '#9966EE', name: '七日年化', bg: '#9966EE' }
+        { id: 'ktx', icon: '砍', color: '#00BB77', name: '砍头息IRR测算', bg: '#00BB77' },
+        { id: 'fljs', icon: '复', color: '#00BB77', name: '复利利率换算', bg: '#00BB77' },
+        { id: 'llzh', icon: '转', color: '#9966EE', name: '名义/真实利率转换', bg: '#9966EE' },
+        { id: 'mjdk', icon: '上', color: '#9966EE', name: '民间借贷利率上限', bg: '#9966EE' }
       ]
     ],
-    banners: [
-      {
-        title: 'LPR是什么？',
-        subtitle: '贷款市场报价利率如何影响你的房贷月供',
-        bg: '#FF44BB'
-      }
-    ],
+    // 轮播默认文本（后台可覆盖）
+    banner: {
+      title: '真实年化IRR怎么算？',
+      subtitle: '网贷隐藏担保费、会员费全部计入真实成本',
+      more: '查看测算教程 →'
+    },
+    kf_wechat: '',
+    kf_qrcode: '',
     currentBanner: 0
+  },
+
+  onLoad() {
+    this.loadSettings()
+  },
+
+  loadSettings() {
+    wx.request({
+      url: API_BASE + '/api/admin/settings',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          const s = res.data
+          const update = {}
+          if (s.home_title) update['banner.title'] = s.home_title
+          if (s.home_subtitle) update['banner.subtitle'] = s.home_subtitle
+          if (s.home_desc) update['banner.more'] = s.home_desc
+          if (s.kf_wechat) update.kf_wechat = s.kf_wechat
+          if (s.kf_qrcode) update.kf_qrcode = s.kf_qrcode
+          if (Object.keys(update).length > 0) this.setData(update)
+        }
+      }
+    })
   },
 
   onToolTap(e) {
@@ -38,5 +61,17 @@ Page({
 
   onBannerTap() {
     wx.navigateTo({ url: '/pages/knowledge/knowledge' })
+  },
+
+  onKfTap() {
+    const wechat = this.data.kf_wechat
+    if (wechat) {
+      wx.setClipboardData({
+        data: wechat,
+        success: () => wx.showToast({ title: '微信号已复制', icon: 'success' })
+      })
+    } else {
+      wx.showToast({ title: '暂未设置客服', icon: 'none' })
+    }
   }
 })
